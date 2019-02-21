@@ -70,6 +70,18 @@ const router = new Router({
             ]
         },
         {
+            name: 'courses',
+            path: '/courses',
+            component: require('./courses/Courses'),
+            children: [
+                {
+                    path:'/',
+                    name:'courses.list',
+                    component: require('./courses/components/CourseLists')
+                },
+            ]
+        },
+        {
             name: 'files',
             path: '/files',
             component: require('./files/Files'),

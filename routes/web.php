@@ -33,4 +33,6 @@ Route::prefix('admin')->namespace('Admin')->middleware(['auth','demo'])->group(f
     Route::resource('permissions','PermissionController');
     Route::resource('files','FileController');
     Route::resource('file-groups','FileGroupController');
+
+    Route::resource('courses','CourseController');
 });

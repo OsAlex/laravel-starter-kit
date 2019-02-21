@@ -3,24 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Components\Core\Utilities\Helpers;
-use App\Components\User\Models\User;
-use App\Components\User\Repositories\UserRepository;
+use App\Components\Course\Models\Course;
+use App\Components\Course\Repositories\CourseRepository;
 use Illuminate\Http\Request;
 
-class UserController extends AdminController
+class CourseController extends AdminController
 {
     /**
-     * @var UserRepository
+     * @var CourseRepository
      */
-    private $userRepository;
+    private $courseRepository;
 
     /**
-     * UserController constructor.
-     * @param UserRepository $userRepository
+     * CourseController constructor.
+     * @param CourseRepository $courseRepository
      */
-    public function __construct(UserRepository $userRepository)
+    public function __construct(CourseRepository $courseRepository)
     {
-        $this->userRepository = $userRepository;
+        $this->courseRepository = $courseRepository;
     }
 
     /**
@@ -30,9 +30,9 @@ class UserController extends AdminController
      */
     public function index()
     {
-        $data = $this->userRepository->listUsers(request()->all());
+        $data = $this->courseRepository->listCourses(request()->all());
 
-        return $this->sendResponseOk($data,"list users ok.");
+        return $this->sendResponseOk($data,"list courses ok.");
     }
 
     /**
@@ -45,7 +45,7 @@ class UserController extends AdminController
     {
         $validate = validator($request->all(),[
             'name' => 'required',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email|unique:courses,email',
             'password' => 'required|min:8',
             'permissions' => 'array',
             'groups' => 'array',
@@ -53,21 +53,21 @@ class UserController extends AdminController
 
         if($validate->fails()) return $this->sendResponseBadRequest($validate->errors()->first());
 
-        /** @var User $user */
-        $user = $this->userRepository->create($request->all());
+        /** @var Course $course */
+        $course = $this->courseRepository->create($request->all());
 
-        if(!$user) return $this->sendResponseBadRequest("Failed create.");
+        if(!$course) return $this->sendResponseBadRequest("Failed create.");
 
         // attach to group
         if($groups = $request->get('groups',[]))
         {
             foreach ($groups as $groupId => $shouldAttach)
             {
-                if($shouldAttach) $user->groups()->attach($groupId);
+                if($shouldAttach) $course->groups()->attach($groupId);
             }
         }
 
-        return $this->sendResponseCreated($user);
+        return $this->sendResponseCreated($course);
     }
 
     /**
@@ -78,11 +78,11 @@ class UserController extends AdminController
      */
     public function show($id)
     {
-        $user = $this->userRepository->find($id,['groups']);
+        $course = $this->courseRepository->find($id,['groups']);
 
-        if(!$user) return $this->sendResponseNotFound();
+        if(!$course) return $this->sendResponseNotFound();
 
-        return $this->sendResponseOk($user);
+        return $this->sendResponseOk($course);
     }
 
     /**
@@ -109,14 +109,14 @@ class UserController extends AdminController
         // we will remove it to avoid updating password with unexpected value
         if(!Helpers::hasValue($payload['password'])) unset($payload['password']);
 
-        $updated = $this->userRepository->update($id,$payload);
+        $updated = $this->courseRepository->update($id,$payload);
 
         if(!$updated) return $this->sendResponseBadRequest("Failed update");
 
         // re-sync groups
 
-        /** @var User $user */
-        $user = $this->userRepository->find($id);
+        /** @var Course $course */
+        $course = $this->courseRepository->find($id);
 
         $groupIds = [];
 
@@ -128,7 +128,7 @@ class UserController extends AdminController
             }
         }
 
-        $user->groups()->sync($groupIds);
+        $course->groups()->sync($groupIds);
 
         return $this->sendResponseUpdated();
     }
@@ -142,10 +142,10 @@ class UserController extends AdminController
     public function destroy($id)
     {
         // do not delete self
-        if($id == auth()->user()->id) return $this->sendResponseForbidden();
+        if($id == auth()->course()->id) return $this->sendResponseForbidden();
 
         try {
-            $this->userRepository->delete($id);
+            $this->courseRepository->delete($id);
         } catch (\Exception $e) {
             return $this->sendResponseBadRequest("Failed to delete");
         }

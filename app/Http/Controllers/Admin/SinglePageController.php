@@ -45,6 +45,15 @@ class SinglePageController extends AdminController
             new MenuItem([
                 'group_requirements' => [],
                 'permission_requirements' => ['superuser'],
+                'label'=>'Courses',
+                'nav_type' => MenuItem::$NAV_TYPE_NAV,
+                'icon'=>'settings',
+                'route_type'=>'vue',
+                'route_name'=>'courses'
+            ]),
+            new MenuItem([
+                'group_requirements' => [],
+                'permission_requirements' => ['superuser'],
                 'label'=>'Files',
                 'nav_type' => MenuItem::$NAV_TYPE_NAV,
                 'icon'=>'cloud_circle',

@@ -9,8 +9,8 @@
                         <v-text-field prepend-icon="search" box label="Filter By Name" v-model="filters.name"></v-text-field>
                     </v-flex>
                     <v-flex xs12 sm6 class="text-xs-right">
-                        <v-btn @click="showDialog('file_group_add')" dark class="primary lighten-1">
-                            New File Group
+                        <v-btn @click="showDialog('course_category_add')" dark class="primary lighten-1">
+                            New Course Category
                             <v-icon right>add</v-icon>
                         </v-btn>
                     </v-flex>
@@ -19,15 +19,15 @@
         </v-card>
         <!-- /search -->
 
-        <!-- groups table -->
+        <!-- categories table -->
         <v-data-table
-                v-bind:headers="headers"
-                v-bind:pagination.sync="pagination"
-                :items="items"
-                :total-items="totalItems"
-                class="elevation-1">
+            v-bind:headers="headers"
+            v-bind:pagination.sync="pagination"
+            :items="items"
+            :total-items="totalItems"
+            class="elevation-1">
             <template slot="headerCell" slot-scope="props">
-                <span v-if="props.header.value=='file_count'">
+                <span v-if="props.header.value=='course_count'">
                     <v-icon>dns</v-icon> {{ props.header.text }}
                 </span>
                 <span v-else-if="props.header.value=='created_at'">
@@ -37,7 +37,7 @@
             </template>
             <template slot="items" slot-scope="props">
                 <td>
-                    <v-btn @click="showDialog('file_group_edit',props.item)" icon small>
+                    <v-btn @click="showDialog('course_category_edit',props.item)" icon small>
                         <v-icon class="blue--text">edit</v-icon>
                     </v-btn>
                     <v-btn @click="trash(props.item)" icon small>
@@ -46,45 +46,45 @@
                 </td>
                 <td>{{ props.item.name }}</td>
                 <td>{{ props.item.description }}</td>
-                <td>{{ props.item.file_count }}</td>
+                <td>{{ props.item.course_count }}</td>
                 <td>{{ $appFormatters.formatDate(props.item.created_at) }}</td>
             </template>
         </v-data-table>
 
-        <!-- add file group -->
+        <!-- add course category -->
         <v-dialog v-model="dialogs.add.show" fullscreen transition="dialog-bottom-transition" :overlay=false>
             <v-card>
                 <v-toolbar class="primary">
                     <v-btn icon @click.native="dialogs.add.show = false">
                         <v-icon>close</v-icon>
                     </v-btn>
-                    <v-toolbar-title>Create New File Group</v-toolbar-title>
+                    <v-toolbar-title>Create New Course Category</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
                         <v-btn flat @click.native="dialogs.add.show = false">Done</v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
                 <v-card-text>
-                    <file-group-add></file-group-add>
+                    <course-category-add></course-category-add>
                 </v-card-text>
             </v-card>
         </v-dialog>
 
-        <!-- edit file group -->
+        <!-- edit course category -->
         <v-dialog v-model="dialogs.edit.show" fullscreen :laze="false" transition="dialog-bottom-transition" :overlay=false>
             <v-card>
                 <v-toolbar class="primary">
                     <v-btn icon @click.native="dialogs.edit.show = false">
                         <v-icon>close</v-icon>
                     </v-btn>
-                    <v-toolbar-title>Edit File Group</v-toolbar-title>
+                    <v-toolbar-title>Edit Course Category</v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
                         <v-btn flat @click.native="dialogs.edit.show = false">Done</v-btn>
                     </v-toolbar-items>
                 </v-toolbar>
                 <v-card-text>
-                    <file-group-edit :propFileGroupId="dialogs.edit.fileGroup.id"></file-group-edit>
+                    <course-category-edit :propCourseCategoryId="dialogs.edit.courseCategory.id"></course-category-edit>
                 </v-card-text>
             </v-card>
         </v-dialog>
@@ -93,22 +93,22 @@
 </template>
 
 <script>
-    import FileGroupAdd from './FileGroupAdd.vue';
-    import FileGroupEdit from './FileGroupEdit.vue';
+    import CourseCategoryAdd from './CourseCategoryAdd.vue';
+    import CourseCategoryEdit from './CourseCategoryEdit.vue';
     import _ from 'lodash';
 
     export default {
         components: {
-            FileGroupAdd,
-            FileGroupEdit
+            CourseCategoryAdd,
+            CourseCategoryEdit
         },
         data() {
             return {
                 headers: [
                     { text: 'Action', value: false, align: 'left', sortable: false },
-                    { text: 'Group Name', value: 'name', align: 'left', sortable: false },
+                    { text: 'Category Name', value: 'name', align: 'left', sortable: false },
                     { text: 'Description', value: 'description', align: 'left', sortable: false },
-                    { text: 'Total Files', value: 'file_count', align: 'left', sortable: false },
+                    { text: 'Total Courses', value: 'course_count', align: 'left', sortable: false },
                     { text: 'Date Created', value: 'created_at', align: 'left', sortable: false },
                 ],
                 items: [],
@@ -123,7 +123,7 @@
 
                 dialogs: {
                     edit: {
-                        fileGroup: {},
+                        courseCategory: {},
                         show: false
                     },
                     add: {
@@ -133,36 +133,36 @@
             }
         },
         mounted() {
-            console.log('pages.files.components.FileGroupLists.vue');
+            console.log('pages.courses.components.CourseCategoryLists.vue');
 
             const self = this;
 
             self.$eventBus.$on(['FILE_GROUP_ADDED','FILE_GROUP_UPDATED','FILE_GROUP_DELETED'],()=>{
-                self.loadFileGroups(()=>{});
+                self.loadCourseCategories(()=>{});
             });
         },
         watch: {
             'filters.name':_.debounce(function(v) {
-                this.loadFileGroups(()=>{});
+                this.loadCourseCategories(()=>{});
             },500),
             'pagination.page':function(){
-                this.loadFileGroups(()=>{});
+                this.loadCourseCategories(()=>{});
             },
             'pagination.rowsPerPage':function(){
-                this.loadFileGroups(()=>{});
+                this.loadCourseCategories(()=>{});
             },
         },
         methods: {
-            trash(group) {
+            trash(category) {
                 const self = this;
 
                 self.$store.commit('showDialog',{
                     type: "confirm",
                     title: "Confirm Deletion",
-                    message: "Are you sure you want to delete this file group?",
+                    message: "Are you sure you want to delete this course category?",
                     okCb: ()=>{
 
-                        axios.delete('/admin/file-groups/' + group.id).then(function(response) {
+                        axios.delete('/admin/course-categories/' + category.id).then(function(response) {
 
                             self.$store.commit('showSnackbar',{
                                 message: response.data.message,
@@ -196,20 +196,20 @@
                 const self = this;
 
                 switch (dialog){
-                    case 'file_group_edit':
-                        self.dialogs.edit.fileGroup = data;
+                    case 'course_category_edit':
+                        self.dialogs.edit.courseCategory = data;
                         setTimeout(()=>{
                             self.dialogs.edit.show = true;
                         },500);
                         break;
-                    case 'file_group_add':
+                    case 'course_category_add':
                         setTimeout(()=>{
                             self.dialogs.add.show = true;
                         },500);
                         break;
                 }
             },
-            loadFileGroups(cb) {
+            loadCourseCategories(cb) {
 
                 const self = this;
 
@@ -219,7 +219,7 @@
                     per_page: self.pagination.rowsPerPage
                 };
 
-                axios.get('/admin/file-groups',{params: params}).then(function(response) {
+                axios.get('/admin/course-categories',{params: params}).then(function(response) {
                     self.items = response.data.data.data;
                     self.totalItems = response.data.data.total;
                     self.pagination.totalItems = response.data.data.total;
